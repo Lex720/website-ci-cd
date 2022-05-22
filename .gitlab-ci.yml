@@ -5,21 +5,21 @@ stages:
   - test
   - deploy
 
-build website:
-  stage: build
-  script:
-    - npm install
-    - npm install -g gatsby-cli
-    - gatsby build
-  artifacts:
-    paths:
-      - ./public
+# build website:
+#   stage: build
+#   script:
+#     - npm install
+#     - npm install -g gatsby-cli
+#     - gatsby build
+#   artifacts:
+#     paths:
+#       - ./public
 
-test build:
-  stage: test
-  image: alpine
-  script:
-    - grep -q "Gatsby" ./public/index.html
+# test build:
+#   stage: test
+#   image: alpine
+#   script:
+#     - grep -q "Gatsby" ./public/index.html
 
 test serve:
   stage: test
@@ -27,7 +27,7 @@ test serve:
     - npm install
     - npm install -g gatsby-cli
     - gatsby serve &
-    - sleep 3
+    - sleep 5
     - curl "http://localhost:9000" | tac | tac | grep -q "Gatsby"
 
 deploy website:
