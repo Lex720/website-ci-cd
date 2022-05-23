@@ -6,13 +6,18 @@ stages:
   - deploy
   - test deploy
 
+cache:
+    key: ${CI_COMMIT_REF_SLUG}
+    paths:
+    - node_modules/
+
 build website:
   stage: build
   script:
-    - echo $CI_COMMIT_SHORT_SHA
     - npm install
     - npm install -g gatsby-cli
     - gatsby build
+    - echo $CI_COMMIT_SHORT_SHA
     - sed -i "s/%%VERSION%%/$CI_COMMIT_SHORT_SHA/" ./public/index.html
   artifacts:
     paths:
@@ -40,7 +45,7 @@ deploy website:
     - surge --project ./public --domain buzzally.surge.sh
 
 test deploy:
-  image: apline
+  image: alpine
   stage: test deploy
   script:
     - apk add --no-cache curl
