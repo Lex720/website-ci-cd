@@ -9,7 +9,8 @@ stages:
 cache:
     key: ${CI_COMMIT_REF_SLUG}
     paths:
-    - node_modules/
+      - node_modules/
+    policy: pull
 
 build website:
   stage: build
@@ -26,6 +27,7 @@ build website:
 test build:
   image: alpine
   stage: test
+  cache: {}
   script:
     - grep -q "Gatsby" ./public/index.html
 
@@ -40,6 +42,7 @@ test serve:
 
 deploy website:
   stage: deploy
+  cache: {}
   script:
     - npm install --global surge
     - surge --project ./public --domain buzzally.surge.sh
@@ -47,6 +50,7 @@ deploy website:
 test deploy:
   image: alpine
   stage: test deploy
+  cache: {}
   script:
     - apk add --no-cache curl
     - curl "https://buzzally.surge.sh/" | tac | tac | grep -q "Gatsby"
