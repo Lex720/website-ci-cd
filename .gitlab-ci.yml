@@ -39,6 +39,5 @@ deploy website:
 
 test deploy:
   stage: test deploy
-  image: alpine
   script:
     - curl "https://buzzally.surge.sh/" | tac | tac | grep -q "Gatsby"
