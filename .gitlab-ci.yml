@@ -61,6 +61,7 @@ deploy production:
     name: production
     url: https://$PRODUCTION_DOMAIN
   cache: {}
+  when: manual
   script:
     - npm install --global surge
     - surge --project ./public --domain $PRODUCTION_DOMAIN
