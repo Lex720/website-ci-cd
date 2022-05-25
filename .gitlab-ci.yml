@@ -1,8 +1,8 @@
 image: node
 
 variables:
-  STAGING_DOMAIN: buzzally-staging.surge.sh
-  PRODUCTION_DOMAIN: buzzally.surge.sh
+  STAGING_DOMAIN: buzzallys-staging.surge.sh
+  PRODUCTION_DOMAIN: buzzallys.surge.sh
 
 stages:
   - build
