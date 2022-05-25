@@ -1,12 +1,14 @@
 image: node
 
 variables:
-  STAGING_DOMAIN: buzzallys-staging.surge.sh
-  PRODUCTION_DOMAIN: buzzallys.surge.sh
+  STAGING_DOMAIN: buzzally-staging.surge.sh
+  PRODUCTION_DOMAIN: buzzally.surge.sh
+  REVIEW_DOMAIN: buzzally-$CI_ENVIRONMENT_SLUG.surge.sh
 
 stages:
   - build
   - test
+  - deploy review
   - deploy staging
   - deploy production
   - production tests
@@ -44,6 +46,18 @@ test serve:
     - gatsby serve &
     - sleep 10
     - curl "http://localhost:9000" | tac | tac | grep -q "Gatsby"
+
+deploy review:
+  stage: deploy review
+  environment:
+    name: review/$CI_COMMIT_REF_NAME
+    url: https://$REVIEW_DOMAIN
+  cache: {}
+  only:
+    - merge_requests
+  script:
+    - npm install --global surge
+    - surge --project ./public --domain $STAGING_DOMAIN
 
 deploy staging:
   stage: deploy staging
