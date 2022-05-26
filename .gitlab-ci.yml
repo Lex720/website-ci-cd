@@ -20,16 +20,16 @@ cache:
       - node_modules/
     policy: pull
 
-skiped job: # this job do not execute using .
+.skiped test_job: # do not execute using a dot
   stage: build
-  # allow_failure: true
-  # when: manual
+  allow_failure: true
+  when: manual
   cache: {}
   variables:
     TEST_VARIABLE: "Test"
-    VARIABLE_FROM_VARIABLE: $PRODUCTION_DOMAIN
+    VARIABLE_FROM_VARIABLES: $PRODUCTION_DOMAIN
   script:
-    - echo "$TEST_VARIABLE" and "$PRODUCTION_DOMAIN" and $VARIABLE_FROM_VARIABLE
+    - echo "$TEST_VARIABLE" and $VARIABLE_FROM_VARIABLES
 
 build:
   stage: build
