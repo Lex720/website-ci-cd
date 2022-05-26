@@ -1,8 +1,9 @@
-image: node
+default:
+  image: node
 
 variables:
-  STAGING_DOMAIN: buzzally-staging.surge.sh
   PRODUCTION_DOMAIN: buzzally.surge.sh
+  STAGING_DOMAIN: buzzally-staging.surge.sh
   REVIEW_DOMAIN: buzzally-$CI_ENVIRONMENT_SLUG.surge.sh
 
 stages:
@@ -19,11 +20,23 @@ cache:
       - node_modules/
     policy: pull
 
+skiped job: # this job do not execute using .
+  stage: build
+  # allow_failure: true
+  # when: manual
+  cache: {}
+  variables:
+    TEST_VARIABLE: "Test"
+    VARIABLE_FROM_VARIABLE: $PRODUCTION_DOMAIN
+  script:
+    - echo "$TEST_VARIABLE" and "$PRODUCTION_DOMAIN" and $VARIABLE_FROM_VARIABLE
+
 build:
   stage: build
-  script:
+  before_script:
     - npm install
     - npm install -g gatsby-cli
+  script:
     - gatsby build
     - echo $CI_COMMIT_SHORT_SHA
     - sed -i "s/%%VERSION%%/$CI_COMMIT_SHORT_SHA/" ./public/index.html
@@ -40,9 +53,10 @@ test build:
 
 test serve:
   stage: test
-  script:
+  before_script:
     - npm install
     - npm install -g gatsby-cli
+  script:
     - gatsby serve &
     - sleep 10
     - curl "http://localhost:9000" | tac | tac | grep -q "Gatsby"
@@ -52,12 +66,30 @@ deploy review:
   environment:
     name: review/$CI_COMMIT_REF_NAME
     url: https://$REVIEW_DOMAIN
+    on_stop: stop review
   cache: {}
   only:
     - merge_requests
-  script:
+  before_script:
     - npm install --global surge
-    - surge --project ./public --domain $STAGING_DOMAIN
+  script:
+    - surge --project ./public --domain $REVIEW_DOMAIN
+
+stop review:
+  stage: deploy review
+  when: manual
+  environment:
+    name: review/$CI_COMMIT_REF_NAME
+    action: stop
+  cache: {}
+  only:
+    - merge_requests
+  before_script:
+    - npm install --global surge
+  script:
+    - surge teardown $REVIEW_DOMAIN
+  variables:
+    GIT_STRATEGY: none
 
 deploy staging:
   stage: deploy staging
@@ -67,8 +99,9 @@ deploy staging:
   cache: {}
   only:
     - master
-  script:
+  before_script:
     - npm install --global surge
+  script:
     - surge --project ./public --domain $STAGING_DOMAIN
 
 deploy production:
@@ -79,11 +112,10 @@ deploy production:
   cache: {}
   only:
     - master
-  script:
+  before_script:
     - npm install --global surge
+  script:
     - surge --project ./public --domain $PRODUCTION_DOMAIN
-  # when: manual
-  # allow_failure: false
 
 production tests:
   image: alpine
@@ -91,7 +123,8 @@ production tests:
   cache: {}
   only:
     - master
-  script:
+  before_script:
     - apk add --no-cache curl
+  script:
     - curl "https://$PRODUCTION_DOMAIN/" | tac | tac | grep -q "Gatsby"
     - curl "https://$PRODUCTION_DOMAIN/" | tac | tac | grep -q "$CI_COMMIT_SHORT_SHA"
